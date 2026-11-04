@@ -208,11 +208,10 @@ function QuoteButton({ productId, accountId, userId }: { productId: string; acco
   return (
     <Button size="sm" variant="outline" disabled={busy} onClick={async () => {
       setBusy(true);
-      const id = crypto.randomUUID();
-      const { error } = await supabase.from("quotes").insert({ id, account_id: accountId, requested_by: userId });
-      const l = error ? error : (await supabase.from("quote_lines").insert({ quote_id: id, product_id: productId, quantity: 1 })).error;
+      void accountId; void userId;
+      const { error } = await supabase.rpc("request_quote", { _lines: [{ product_id: productId, quantity: 1 }] });
       setBusy(false);
-      if (l) { toast.error("Demande de devis impossible"); return; }
+      if (error) { toast.error("Demande de devis impossible"); return; }
       toast.success("Demande de devis envoyée");
     }}>Demander un devis</Button>
   );

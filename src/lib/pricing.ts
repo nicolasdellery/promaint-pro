@@ -104,3 +104,12 @@ export function globalDelayDays(lineDelays: number[]) {
 export function priceChanged(snapshot: number | undefined, current: number) {
   return snapshot != null && Math.round(snapshot * 100) !== Math.round(current * 100);
 }
+
+// RG-12: beyond this cart amount, the cart becomes a quote request.
+export const QUOTE_THRESHOLD_HT = 5000;
+export const needsQuote = (totalHt: number) => totalHt > QUOTE_THRESHOLD_HT;
+// RG-13: a priced quote is valid 30 days; once past valid_until it cannot be accepted.
+export const QUOTE_VALIDITY_DAYS = 30;
+export function quoteAcceptable(q: { status: string; valid_until: string | null }, today = new Date().toISOString().slice(0, 10)) {
+  return q.status === "priced" && !!q.valid_until && q.valid_until >= today;
+}

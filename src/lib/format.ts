@@ -30,6 +30,7 @@ export const PRICE_ORIGIN: Record<string, string> = {
   tier: "Remise quantité",
   account_discount: "Remise compte",
   catalog: "Prix catalogue",
+  quote: "Prix devis",
 };
 
 export const ROLE_LABEL: Record<string, string> = {

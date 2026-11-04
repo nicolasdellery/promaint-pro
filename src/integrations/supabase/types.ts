@@ -189,10 +189,12 @@ export type Database = {
           created_at: string
           created_by: string
           erp_attempts: number
+          erp_blocked_reason: string | null
           erp_reference: string | null
           id: string
           partial_delivery_allowed: boolean
           processing_fee: number
+          quote_id: string | null
           rejection_reason: string | null
           shipping_fee: number
           status: Database["public"]["Enums"]["order_status"]
@@ -205,10 +207,12 @@ export type Database = {
           created_at?: string
           created_by: string
           erp_attempts?: number
+          erp_blocked_reason?: string | null
           erp_reference?: string | null
           id?: string
           partial_delivery_allowed?: boolean
           processing_fee?: number
+          quote_id?: string | null
           rejection_reason?: string | null
           shipping_fee?: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -221,10 +225,12 @@ export type Database = {
           created_at?: string
           created_by?: string
           erp_attempts?: number
+          erp_blocked_reason?: string | null
           erp_reference?: string | null
           id?: string
           partial_delivery_allowed?: boolean
           processing_fee?: number
+          quote_id?: string | null
           rejection_reason?: string | null
           shipping_fee?: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -244,6 +250,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
@@ -325,6 +338,7 @@ export type Database = {
           account_id: string
           created_at: string
           id: string
+          order_id: string | null
           requested_by: string
           status: Database["public"]["Enums"]["quote_status"]
           total_ht: number | null
@@ -334,6 +348,7 @@ export type Database = {
           account_id: string
           created_at?: string
           id?: string
+          order_id?: string | null
           requested_by: string
           status?: Database["public"]["Enums"]["quote_status"]
           total_ht?: number | null
@@ -343,6 +358,7 @@ export type Database = {
           account_id?: string
           created_at?: string
           id?: string
+          order_id?: string | null
           requested_by?: string
           status?: Database["public"]["Enums"]["quote_status"]
           total_ht?: number | null
@@ -354,6 +370,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
@@ -457,6 +480,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_quote: { Args: { _quote: string }; Returns: string }
+      admin_delete_contract_price: { Args: { _id: string }; Returns: undefined }
+      admin_release_credit: { Args: { _order: string }; Returns: undefined }
+      admin_retry_erp: { Args: { _order: string }; Returns: boolean }
+      admin_set_contract_price: {
+        Args: {
+          _account: string
+          _end: string
+          _price: number
+          _product: string
+        }
+        Returns: undefined
+      }
+      admin_simulate_shipment: { Args: { _order: string }; Returns: string }
+      admin_update_account: {
+        Args: {
+          _credit: number
+          _discount: number
+          _id: string
+          _outstanding: number
+          _threshold: number
+        }
+        Returns: undefined
+      }
       approve_order: {
         Args: { _approve: boolean; _order: string }
         Returns: undefined
@@ -488,6 +535,15 @@ export type Database = {
         Args: { _lines: Json; _partial: boolean; _request_id: string }
         Returns: string
       }
+      price_quote: {
+        Args: { _prices: Json; _quote: string }
+        Returns: undefined
+      }
+      replace_order_line: {
+        Args: { _line: string; _product: string }
+        Returns: undefined
+      }
+      request_quote: { Args: { _lines: Json }; Returns: string }
     }
     Enums: {
       app_role: "buyer" | "approver" | "admin"
@@ -502,7 +558,12 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
-      price_origin: "contract" | "tier" | "account_discount" | "catalog"
+      price_origin:
+        | "contract"
+        | "tier"
+        | "account_discount"
+        | "catalog"
+        | "quote"
       product_status: "active" | "discontinued" | "quote_only"
       quote_status: "requested" | "priced" | "accepted" | "expired"
     }
@@ -645,7 +706,13 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      price_origin: ["contract", "tier", "account_discount", "catalog"],
+      price_origin: [
+        "contract",
+        "tier",
+        "account_discount",
+        "catalog",
+        "quote",
+      ],
       product_status: ["active", "discontinued", "quote_only"],
       quote_status: ["requested", "priced", "accepted", "expired"],
     },

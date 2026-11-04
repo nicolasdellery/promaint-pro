@@ -8,7 +8,7 @@ import { useMe } from "@/lib/me";
 import { catalogQuery, toPricingAccount, toPricingProduct } from "@/lib/catalog";
 import {
   fees, getUnitPrice, globalDelayDays, lineDelayDays, priceChanged, priceOriginLabel, roundToPack,
-  FREE_SHIPPING_HT, MIN_ORDER_HT,
+  FREE_SHIPPING_HT, MIN_ORDER_HT, needsQuote, QUOTE_THRESHOLD_HT,
 } from "@/lib/pricing";
 import { eur } from "@/lib/format";
 import { Pill } from "@/components/StatusBadge";
@@ -101,6 +101,18 @@ function Panier() {
     nav({ to: "/commandes" });
   }
 
+  async function askQuote() {
+    if (submitting.current) return;
+    submitting.current = true;
+    setBusy(true);
+    const { error } = await supabase.rpc("request_quote", { _lines: lines.map((l) => ({ product_id: l.product_id, quantity: l.quantity })) });
+    if (error) { submitting.current = false; setBusy(false); toast.error(error.message); return; }
+    cart.clear();
+    await qc.invalidateQueries();
+    toast.success("Demande de devis envoyée à ProMaint");
+    nav({ to: "/devis" });
+  }
+
   if (lines.length === 0)
     return (
       <div className="space-y-2">
@@ -187,9 +199,16 @@ function Panier() {
             : <>Livraison en une fois — délai global : <span className="font-mono font-medium text-foreground">{globalDelay} jours</span> (ligne la plus longue).</>}
         </p>
 
-        <Button className="w-full" onClick={submit} disabled={busy || rows.some((r) => !r.price)}>
-          {busy ? "Validation…" : "Valider la commande"}
-        </Button>
+        {needsQuote(total) ? (
+          <>
+            <p className="text-xs text-muted-foreground">Au-delà de {eur(QUOTE_THRESHOLD_HT)} HT, la commande passe par un devis chiffré par ProMaint.</p>
+            <Button className="w-full" onClick={askQuote} disabled={busy}>{busy ? "Envoi…" : "Demander un devis"}</Button>
+          </>
+        ) : (
+          <Button className="w-full" onClick={submit} disabled={busy || rows.some((r) => !r.price)}>
+            {busy ? "Validation…" : "Valider la commande"}
+          </Button>
+        )}
         {me.role === "buyer" && (
           <p className="text-[11px] text-muted-foreground">Au-delà de {eur(Number(me.account?.approval_threshold))} HT, la commande est soumise à votre valideur.</p>
         )}

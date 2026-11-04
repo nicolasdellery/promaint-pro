@@ -10,13 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { catalogQuery } from "@/lib/catalog";
 
 export const ordersQuery = queryOptions({
   queryKey: ["orders"],
   queryFn: async () => {
     const { data, error } = await supabase
       .from("orders")
-      .select("*, account:accounts(name), creator:users!orders_created_by_fkey(full_name), order_lines(*, product:products(sku,name))")
+      .select("*, account:accounts(name), creator:users!orders_created_by_fkey(full_name), order_lines(*, product:products(sku,name,status,family))")
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data;
@@ -43,7 +44,8 @@ export const Route = createFileRoute("/_authenticated/commandes")({
   notFoundComponent: () => <div>Introuvable.</div>,
 });
 
-function OrderStatus({ status, attempts, admin }: { status: string; attempts: number; admin: boolean }) {
+function OrderStatus({ status, attempts, admin, blocked }: { status: string; attempts: number; admin: boolean; blocked: string | null }) {
+  if (status === "validated" && blocked) return <Pill tone="danger">Bloquée — référence arrêtée</Pill>;
   // CL-08: while ERP transmission is failing, the client only sees "En cours de transmission"
   if (status === "validated" && attempts > 0) {
     return admin ? <Pill tone="warn">Validée · ERP {attempts}/3 échec{attempts > 1 ? "s" : ""}</Pill> : <Pill tone="info">En cours de transmission</Pill>;
@@ -111,7 +113,7 @@ function Commandes() {
                   <TableCell className="font-mono text-xs">{dateFr(o.created_at)}</TableCell>
                   {isAdmin && <TableCell className="text-sm">{o.account?.name}</TableCell>}
                   <TableCell className="text-sm">{o.creator?.full_name}</TableCell>
-                  <TableCell><OrderStatus status={o.status} attempts={o.erp_attempts} admin={isAdmin} /></TableCell>
+                  <TableCell><OrderStatus status={o.status} attempts={o.erp_attempts} admin={isAdmin} blocked={o.erp_blocked_reason} /></TableCell>
                   <TableCell className="text-right font-mono text-sm">{eur(Number(o.total_ht))}</TableCell>
                   <TableCell className="font-mono text-xs">{o.erp_reference ?? "—"}{o.tracking_number ? ` · ${o.tracking_number}` : ""}</TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -129,13 +131,22 @@ function Commandes() {
                     <TableCell />
                     <TableCell colSpan={7} className="space-y-3">
                       <Stepper status={o.status} />
+                      {o.erp_blocked_reason && o.status === "validated" && <p className="text-sm text-destructive">Transmission ERP bloquée jusqu'au remplacement de la référence arrêtée.</p>}
                       {o.rejection_reason && <p className="text-sm text-destructive">Refusée — motif : {o.rejection_reason}</p>}
                       <table className="w-full text-sm">
                         <tbody>
                           {o.order_lines.map((l) => (
                             <tr key={l.id} className="border-b last:border-0">
                               <td className="py-1 font-mono text-xs">{l.product?.sku}</td>
-                              <td className="py-1">{l.product?.name}</td>
+                              <td className="py-1">
+                                {l.product?.name}
+                                {l.product?.status === "discontinued" && (
+                                  <span className="ml-2 inline-flex items-center gap-2">
+                                    <Pill tone="danger">Référence arrêtée</Pill>
+                                    {o.status === "validated" && <ReplaceLine lineId={l.id} family={l.product.family} />}
+                                  </span>
+                                )}
+                              </td>
                               <td className="py-1 text-right font-mono">{l.quantity} × {eur(Number(l.unit_price_applied))}</td>
                               <td className="py-1 pl-4 text-xs text-muted-foreground">{PRICE_ORIGIN[l.price_origin]}</td>
                               <td className="py-1 text-right font-mono">{eur(l.quantity * Number(l.unit_price_applied))}</td>
@@ -155,5 +166,29 @@ function Commandes() {
         </Table>
       </div>
     </div>
+  );
+}
+
+function ReplaceLine({ lineId, family }: { lineId: string; family: string }) {
+  const { products } = useSuspenseQuery(catalogQuery).data;
+  const qc = useQueryClient();
+  const options = products.filter((p) => p.family === family && p.status === "active");
+  return (
+    <select
+      aria-label="Remplacer par"
+      className="h-7 rounded border bg-background px-1 text-xs"
+      defaultValue=""
+      onClick={(e) => e.stopPropagation()}
+      onChange={async (e) => {
+        if (!e.target.value) return;
+        const { error } = await supabase.rpc("replace_order_line", { _line: lineId, _product: e.target.value });
+        if (error) { toast.error(error.message); return; }
+        toast.success("Référence remplacée — transmission ERP relancée");
+        qc.invalidateQueries();
+      }}
+    >
+      <option value="">Remplacer par…</option>
+      {options.map((p) => <option key={p.id} value={p.id}>{p.sku} — {p.name}</option>)}
+    </select>
   );
 }
