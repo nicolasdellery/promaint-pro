@@ -18,6 +18,7 @@ import { Route as AuthenticatedCatalogueRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCommandesRouteImport } from './routes/_authenticated/commandes'
 import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
 import { Route as AuthenticatedPanierRouteImport } from './routes/_authenticated/panier'
+import { Route as AuthenticatedValidationRouteImport } from './routes/_authenticated/validation'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -63,6 +64,11 @@ const AuthenticatedPanierRoute = AuthenticatedPanierRouteImport.update({
   path: '/panier',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedValidationRoute = AuthenticatedValidationRouteImport.update({
+  id: '/validation',
+  path: '/validation',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/commandes': typeof AuthenticatedCommandesRoute
   '/devis': typeof AuthenticatedDevisRoute
   '/panier': typeof AuthenticatedPanierRoute
+  '/validation': typeof AuthenticatedValidationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/commandes': typeof AuthenticatedCommandesRoute
   '/devis': typeof AuthenticatedDevisRoute
   '/panier': typeof AuthenticatedPanierRoute
+  '/validation': typeof AuthenticatedValidationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/commandes': typeof AuthenticatedCommandesRoute
   '/_authenticated/devis': typeof AuthenticatedDevisRoute
   '/_authenticated/panier': typeof AuthenticatedPanierRoute
+  '/_authenticated/validation': typeof AuthenticatedValidationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/devis'
     | '/panier'
+    | '/validation'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/devis'
     | '/panier'
+    | '/validation'
   id:
     | '__root__'
     | '/'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/commandes'
     | '/_authenticated/devis'
     | '/_authenticated/panier'
+    | '/_authenticated/validation'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -202,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPanierRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/validation': {
+      id: '/_authenticated/validation'
+      path: '/validation'
+      fullPath: '/validation'
+      preLoaderRoute: typeof AuthenticatedValidationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -211,6 +230,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCommandesRoute: typeof AuthenticatedCommandesRoute
   AuthenticatedDevisRoute: typeof AuthenticatedDevisRoute
   AuthenticatedPanierRoute: typeof AuthenticatedPanierRoute
+  AuthenticatedValidationRoute: typeof AuthenticatedValidationRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -219,6 +239,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCommandesRoute: AuthenticatedCommandesRoute,
   AuthenticatedDevisRoute: AuthenticatedDevisRoute,
   AuthenticatedPanierRoute: AuthenticatedPanierRoute,
+  AuthenticatedValidationRoute: AuthenticatedValidationRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
