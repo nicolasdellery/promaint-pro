@@ -65,6 +65,7 @@ function AuthPage() {
           <Button type="submit" disabled={busy}>Se connecter</Button>
         </form>
         <div className="space-y-4">
+        <DemoSelector busy={busy} onPick={(em) => signIn(undefined, em, "Demo1234!")} />
         <div className="rounded-md border bg-card p-4">
           <h2 className="text-sm font-semibold">Connexion en un clic</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -94,5 +95,34 @@ function AuthPage() {
         </div>
       </main>
     </>
+  );
+}
+
+const DEMO_ACCOUNTS = [
+  { key: "staubin", letter: "A", name: "Clinique Saint-Aubin" },
+  { key: "horizon", letter: "B", name: "Résidences Horizon" },
+  { key: "ouest", letter: "C", name: "Logistique Ouest" },
+];
+
+function DemoSelector({ busy, onPick }: { busy: boolean; onPick: (email: string) => void }) {
+  const [acc, setAcc] = useState(DEMO_ACCOUNTS[0]!);
+  return (
+    <div className="rounded-md border-2 border-primary/40 bg-card p-4">
+      <h2 className="text-sm font-semibold">Tester en 2 minutes</h2>
+      <p className="mt-1 text-xs text-muted-foreground">Choisissez un compte client puis un profil — aucune création de compte nécessaire.</p>
+      <div className="mt-3 flex gap-1" role="radiogroup" aria-label="Compte client">
+        {DEMO_ACCOUNTS.map((a) => (
+          <Button key={a.key} type="button" size="sm" variant={a.key === acc.key ? "default" : "outline"} role="radio" aria-checked={a.key === acc.key} onClick={() => setAcc(a)}>
+            Compte {a.letter}
+          </Button>
+        ))}
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">Compte {acc.letter} : {acc.name}</p>
+      <div className="mt-3 grid gap-2">
+        <Button type="button" disabled={busy} onClick={() => onPick(`acheteur.${acc.key}@promaint.demo`)}>Se connecter en tant qu'acheteur Compte {acc.letter}</Button>
+        <Button type="button" disabled={busy} variant="secondary" onClick={() => onPick(`valideur.${acc.key}@promaint.demo`)}>Se connecter en tant que valideur Compte {acc.letter}</Button>
+        <Button type="button" disabled={busy} variant="outline" onClick={() => onPick("admin@promaint.demo")}>Se connecter en tant qu'admin ProMaint</Button>
+      </div>
+    </div>
   );
 }
