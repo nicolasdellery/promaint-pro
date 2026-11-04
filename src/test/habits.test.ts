@@ -21,3 +21,16 @@ describe("RG-16 habitual references", () => {
     expect(r.map((x) => [x.product_id, x.count, x.lastQuantity])).toEqual([["B", 3, 24], ["A", 2, 8]]);
   });
 });
+
+import { needsQuote, quoteAcceptable } from "@/lib/pricing";
+describe("RG-12 / RG-13 quotes", () => {
+  it("asks for a quote only above 5000 € HT", () => {
+    expect(needsQuote(5000)).toBe(false);
+    expect(needsQuote(5000.01)).toBe(true);
+  });
+  it("an expired quote cannot be accepted", () => {
+    expect(quoteAcceptable({ status: "priced", valid_until: "2026-11-03" }, "2026-11-04")).toBe(false);
+    expect(quoteAcceptable({ status: "priced", valid_until: "2026-11-04" }, "2026-11-04")).toBe(true);
+    expect(quoteAcceptable({ status: "requested", valid_until: null }, "2026-11-04")).toBe(false);
+  });
+});
