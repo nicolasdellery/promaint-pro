@@ -78,10 +78,10 @@ Les calculs sensibles (prix, frais, statut d'une commande, transmission ERP) son
 
 | # | Ce que l'IA avait produit | Ce que j'ai corrigé | Fichier / fonction |
 | --- | --- | --- | --- |
-| 1 | _à compléter_ | _à compléter_ | _ex. `src/lib/pricing.ts`_ |
-| 2 | _à compléter_ | _à compléter_ | _à compléter_ |
-| 3 | _à compléter_ | _à compléter_ | _à compléter_ |
-| 4 | _à compléter_ | _à compléter_ | _à compléter_ |
+| 1 | Le premier prompt demandait de créer 10 tables sans préciser leurs champs : Lovable s'est arrêté pour me demander quoi mettre. | J'ai spécifié chaque table, ses champs, ses statuts et la sécurité par ligne (RLS) : un client ne voit que les données de son compte. | Schéma Supabase (tables et politiques RLS) |
+| 2 | La page « À propos du projet » prévue à l'étape 6 n'avait pas été créée, alors que l'étape était annoncée comme terminée. | Écart repéré en recette ; j'ai fait créer la page (problème, MVP, méthode, règles clés, lien vers le cadrage), accessible sans connexion. | Page À propos du projet + en-tête et pied de page |
+| 3 | Le titre de l'accueil employait un registre familier (« pour pros ») pour un portail B2B. | Remplacé par « pour les professionnels », plus cohérent avec un outil métier. | Page d'accueil (titre principal) |
+| 4 | La règle de prix devait être vérifiée par des tests, sans quoi rien ne prouvait que le prix contrat prime et que les remises ne se cumulent pas. | J'ai exigé des tests unitaires sur la fonction de prix et vérifié à la main les cas RG-03, RG-04 et CL-10 avec les comptes à 0 %, 8 % et 12 %. Les 28 tests passent. | Fonction de calcul du prix (getUnitPrice) et ses tests |
 
 ## Auteur
 
