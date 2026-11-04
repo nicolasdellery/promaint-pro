@@ -11,7 +11,7 @@ export const ORDER_STATUS: Record<string, { label: string; tone: "neutral" | "in
   pending_approval: { label: "En attente de validation", tone: "warn" },
   blocked_credit: { label: "Bloquée — encours", tone: "danger" },
   validated: { label: "Validée", tone: "info" },
-  sent_to_erp: { label: "Envoyée ERP", tone: "info" },
+  sent_to_erp: { label: "Transmise ERP", tone: "info" },
   in_preparation: { label: "En préparation", tone: "info" },
   shipped: { label: "Expédiée", tone: "ok" },
   delivered: { label: "Livrée", tone: "ok" },

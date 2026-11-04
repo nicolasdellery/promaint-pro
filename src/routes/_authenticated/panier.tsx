@@ -27,7 +27,8 @@ export const Route = createFileRoute("/_authenticated/panier")({
 const STATUS_MSG: Record<string, string> = {
   blocked_credit: "Commande bloquée : plafond d'encours dépassé. L'administrateur a été alerté.",
   pending_approval: "Commande en attente de validation. Votre valideur a été notifié.",
-  validated: "Commande validée.",
+  validated: "Commande validée — en cours de transmission à l'ERP.",
+  sent_to_erp: "Commande validée et transmise à l'ERP.",
 };
 
 function Panier() {
