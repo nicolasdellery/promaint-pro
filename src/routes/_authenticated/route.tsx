@@ -59,7 +59,7 @@ function Layout() {
             )}
             <div className="hidden text-right leading-tight md:block">
               <div>{me.full_name}</div>
-              <div className="text-xs text-header-foreground/60">{ROLE_LABEL[me.role]}{acc ? ` · ${acc.name}` : ""}</div>
+              <div className="text-xs text-header-foreground/75">{ROLE_LABEL[me.role]}{acc ? ` · ${acc.name}` : ""}</div>
             </div>
             <Button size="icon" variant="ghost" onClick={signOut} aria-label="Se déconnecter" className="text-header-foreground hover:bg-header-foreground/10 hover:text-header-foreground">
               <LogOut />
@@ -69,6 +69,7 @@ function Layout() {
         {acc && (
           <div className="border-t border-header-foreground/10">
             <div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-0.5 px-4 py-1.5 font-mono text-xs text-header-foreground/85">
+              <span className="font-sans md:hidden">{me.full_name} · {ROLE_LABEL[me.role]}</span>
               <span>Remise compte {Number(acc.account_discount)} %</span>
               <span>Seuil validation {eur(acc.approval_threshold)}</span>
               <span>Encours {eur(acc.current_outstanding)} / {eur(acc.credit_limit)}</span>
