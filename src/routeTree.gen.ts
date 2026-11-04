@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DemandeCompteRouteImport } from './routes/demande-compte'
+import { Route as AuthenticatedCatalogueRouteImport } from './routes/_authenticated/catalogue'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -28,33 +34,49 @@ const DemandeCompteRoute = DemandeCompteRouteImport.update({
   path: '/demande-compte',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCatalogueRoute = AuthenticatedCatalogueRouteImport.update({
+  id: '/catalogue',
+  path: '/catalogue',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demande-compte': typeof DemandeCompteRoute
+  '/catalogue': typeof AuthenticatedCatalogueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demande-compte': typeof DemandeCompteRoute
+  '/catalogue': typeof AuthenticatedCatalogueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/demande-compte': typeof DemandeCompteRoute
+  '/_authenticated/catalogue': typeof AuthenticatedCatalogueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/demande-compte'
+  fullPaths: '/' | '/auth' | '/demande-compte' | '/catalogue'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/demande-compte'
-  id: '__root__' | '/' | '/auth' | '/demande-compte'
+  to: '/' | '/auth' | '/demande-compte' | '/catalogue'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/demande-compte'
+    | '/_authenticated/catalogue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemandeCompteRoute: typeof DemandeCompteRoute
 }
@@ -66,6 +88,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -82,11 +111,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemandeCompteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/catalogue': {
+      id: '/_authenticated/catalogue'
+      path: '/catalogue'
+      fullPath: '/catalogue'
+      preLoaderRoute: typeof AuthenticatedCatalogueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCatalogueRoute: typeof AuthenticatedCatalogueRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCatalogueRoute: AuthenticatedCatalogueRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DemandeCompteRoute: DemandeCompteRoute,
 }
