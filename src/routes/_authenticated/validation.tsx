@@ -1,3 +1,4 @@
+import { frError } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -33,7 +34,7 @@ function Validation() {
     setBusy(true);
     const { error } = await supabase.rpc("decide_order", { _order: id, _approve: approve, ...(motif ? { _reason: motif } : {}) });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(frError(error)); return; }
     if (approve) {
       const { data } = await supabase.from("orders").select("status, erp_reference").eq("id", id).maybeSingle();
       if (data?.status === "sent_to_erp") toast.success(`Commande validée et transmise à l'ERP (${data.erp_reference})`);

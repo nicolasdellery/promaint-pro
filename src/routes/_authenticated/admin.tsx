@@ -1,3 +1,4 @@
+import { frError } from "@/lib/errors";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -48,7 +49,7 @@ function useRpc() {
   const qc = useQueryClient();
   return async (fn: () => PromiseLike<{ error: { message: string } | null }>, ok: string) => {
     const { error } = await fn();
-    if (error) { toast.error(error.message); return false; }
+    if (error) { toast.error(frError(error)); return false; }
     toast.success(ok);
     await qc.invalidateQueries();
     return true;
