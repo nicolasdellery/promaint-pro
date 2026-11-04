@@ -83,6 +83,12 @@ Les calculs sensibles (prix, frais, statut d'une commande, transmission ERP) son
 | 3 | Le titre de l'accueil employait un registre familier (« pour pros ») pour un portail B2B. | Remplacé par « pour les professionnels », plus cohérent avec un outil métier. | Page d'accueil (titre principal) |
 | 4 | La règle de prix devait être vérifiée par des tests, sans quoi rien ne prouvait que le prix contrat prime et que les remises ne se cumulent pas. | J'ai exigé des tests unitaires sur la fonction de prix et vérifié à la main les cas RG-03, RG-04 et CL-10 avec les comptes à 0 %, 8 % et 12 %. Les 28 tests passent. | Fonction de calcul du prix (getUnitPrice) et ses tests |
 
+## Suivi du projet
+
+Projet suivi sous Jira (Scrum) : 6 epics, 19 stories, 2 sprints clôturés. Chaque story reprend une règle de gestion ou un cas limite, avec son scénario de recette comme critère d'acceptation.
+
+![Chronologie Jira du projet](jira.png)
+
 ## Auteur
 
 Projet conçu et prototypé par **Nicolas Dellery** — portfolio : https://nicolas-dellery-folio.lovable.app
