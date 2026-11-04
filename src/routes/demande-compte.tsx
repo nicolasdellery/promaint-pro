@@ -38,7 +38,7 @@ function Page() {
     e.preventDefault();
     const fd = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
     const parsed = schema.safeParse(fd);
-    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Formulaire invalide"); return; }
     setBusy(true);
     const v = parsed.data;
     const { error } = await supabase.from("account_requests").insert({
@@ -46,7 +46,7 @@ function Page() {
       siret: v.siret || null, phone: v.phone || null, message: v.message || null,
     });
     setBusy(false);
-    if (error) return toast.error("Envoi impossible, réessayez.");
+    if (error) { toast.error("Envoi impossible, réessayez."); return; }
     setSent(true);
   }
 

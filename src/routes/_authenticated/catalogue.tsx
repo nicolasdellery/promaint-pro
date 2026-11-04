@@ -120,7 +120,7 @@ function Catalogue() {
                           <Input type="number" min={pack} step={pack} value={qn} className="h-8 w-20 font-mono"
                             onChange={(e) => setQty({ ...qty, [p.id]: Math.max(pack, Number(e.target.value) || pack) })} />
                           <Button size="sm" onClick={() => {
-                            if (qn % pack !== 0) return toast.error(`Quantité multiple de ${pack} requise`);
+                            if (qn % pack !== 0) { toast.error(`Quantité multiple de ${pack} requise`); return; }
                             cart.add({ product_id: p.id, sku: p.sku, name: p.name, pack_size: pack, quantity: qn });
                             toast.success(`${p.sku} ajouté au panier`);
                           }}>Ajouter</Button>
@@ -149,7 +149,7 @@ function QuoteButton({ productId, accountId, userId }: { productId: string; acco
       const { error } = await supabase.from("quotes").insert({ id, account_id: accountId, requested_by: userId });
       const l = error ? error : (await supabase.from("quote_lines").insert({ quote_id: id, product_id: productId, quantity: 1 })).error;
       setBusy(false);
-      if (l) return toast.error("Demande de devis impossible");
+      if (l) { toast.error("Demande de devis impossible"); return; }
       toast.success("Demande de devis envoyée");
     }}>Demander un devis</Button>
   );

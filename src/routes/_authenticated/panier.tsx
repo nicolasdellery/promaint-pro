@@ -30,7 +30,7 @@ function Panier() {
       _partial: partial,
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     cart.clear();
     await qc.invalidateQueries();
     toast.success("Commande enregistrée");

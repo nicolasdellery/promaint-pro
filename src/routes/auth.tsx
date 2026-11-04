@@ -40,7 +40,7 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email: em, password: pw });
     setBusy(false);
-    if (error) return toast.error("Identifiants incorrects");
+    if (error) { toast.error("Identifiants incorrects"); return; }
     nav({ to: "/catalogue" });
   }
 

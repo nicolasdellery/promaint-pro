@@ -37,7 +37,7 @@ function Commandes() {
 
   async function decide(id: string, approve: boolean) {
     const { error } = await supabase.rpc("approve_order", { _order: id, _approve: approve });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(approve ? "Commande validée" : "Commande refusée");
     qc.invalidateQueries();
   }
