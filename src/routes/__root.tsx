@@ -138,7 +138,17 @@ function RootComponent() {
         </div>
         <footer className="border-t bg-card py-4 text-center text-xs text-muted-foreground">
           <p className="px-4">{DISCLAIMER}</p>
-          <Link to="/a-propos" className="mt-1 inline-block underline underline-offset-2 hover:text-foreground">À propos du projet</Link>
+          <span className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+            <Link to="/a-propos" className="inline-block underline underline-offset-2 hover:text-foreground">À propos du projet</Link>
+            <a
+              href="https://promaint-pro.lovable.app/note-de-cadrage.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block underline underline-offset-2 hover:text-foreground"
+            >
+              Note de cadrage (PDF)
+            </a>
+          </span>
         </footer>
       </div>
       <Toaster richColors position="top-right" />
