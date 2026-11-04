@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Order pricing, fees and approval/credit status are computed in the database functions (`place_order`, `compute_price`, `approve_order`); `src/lib/pricing.ts` only mirrors them for display — change both together.
