@@ -18,6 +18,7 @@ import { Route as AuthenticatedCatalogueRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCommandesRouteImport } from './routes/_authenticated/commandes'
 import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
 import { Route as AuthenticatedPanierRouteImport } from './routes/_authenticated/panier'
+import { Route as AuthenticatedReferencesRouteImport } from './routes/_authenticated/references'
 import { Route as AuthenticatedValidationRouteImport } from './routes/_authenticated/validation'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +65,11 @@ const AuthenticatedPanierRoute = AuthenticatedPanierRouteImport.update({
   path: '/panier',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReferencesRoute = AuthenticatedReferencesRouteImport.update({
+  id: '/references',
+  path: '/references',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedValidationRoute = AuthenticatedValidationRouteImport.update({
   id: '/validation',
   path: '/validation',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/commandes': typeof AuthenticatedCommandesRoute
   '/devis': typeof AuthenticatedDevisRoute
   '/panier': typeof AuthenticatedPanierRoute
+  '/references': typeof AuthenticatedReferencesRoute
   '/validation': typeof AuthenticatedValidationRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/commandes': typeof AuthenticatedCommandesRoute
   '/devis': typeof AuthenticatedDevisRoute
   '/panier': typeof AuthenticatedPanierRoute
+  '/references': typeof AuthenticatedReferencesRoute
   '/validation': typeof AuthenticatedValidationRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/commandes': typeof AuthenticatedCommandesRoute
   '/_authenticated/devis': typeof AuthenticatedDevisRoute
   '/_authenticated/panier': typeof AuthenticatedPanierRoute
+  '/_authenticated/references': typeof AuthenticatedReferencesRoute
   '/_authenticated/validation': typeof AuthenticatedValidationRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/devis'
     | '/panier'
+    | '/references'
     | '/validation'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/commandes'
     | '/devis'
     | '/panier'
+    | '/references'
     | '/validation'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/commandes'
     | '/_authenticated/devis'
     | '/_authenticated/panier'
+    | '/_authenticated/references'
     | '/_authenticated/validation'
   fileRoutesById: FileRoutesById
 }
@@ -214,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPanierRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/references': {
+      id: '/_authenticated/references'
+      path: '/references'
+      fullPath: '/references'
+      preLoaderRoute: typeof AuthenticatedReferencesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/validation': {
       id: '/_authenticated/validation'
       path: '/validation'
@@ -230,6 +249,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCommandesRoute: typeof AuthenticatedCommandesRoute
   AuthenticatedDevisRoute: typeof AuthenticatedDevisRoute
   AuthenticatedPanierRoute: typeof AuthenticatedPanierRoute
+  AuthenticatedReferencesRoute: typeof AuthenticatedReferencesRoute
   AuthenticatedValidationRoute: typeof AuthenticatedValidationRoute
 }
 
@@ -239,6 +259,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCommandesRoute: AuthenticatedCommandesRoute,
   AuthenticatedDevisRoute: AuthenticatedDevisRoute,
   AuthenticatedPanierRoute: AuthenticatedPanierRoute,
+  AuthenticatedReferencesRoute: AuthenticatedReferencesRoute,
   AuthenticatedValidationRoute: AuthenticatedValidationRoute,
 }
 
