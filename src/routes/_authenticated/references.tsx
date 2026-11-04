@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/references")({
   head: () => ({ meta: [{ title: "Mes références habituelles — ProMaint Pro" }, { name: "description", content: "Vos produits commandés régulièrement." }] }),
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(ordersQuery), context.queryClient.ensureQueryData(catalogQuery)]),
   component: References,
-  errorComponent: ({ error }) => <div role="alert">{error.message}</div>,
+  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div>Introuvable.</div>,
 });
 

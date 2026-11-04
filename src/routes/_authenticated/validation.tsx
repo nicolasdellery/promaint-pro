@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/validation")({
   head: () => ({ meta: [{ title: "Espace valideur — ProMaint Pro" }, { name: "description", content: "Commandes en attente de validation." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(ordersQuery),
   component: Validation,
-  errorComponent: ({ error }) => <div role="alert">{error.message}</div>,
+  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div>Introuvable.</div>,
 });
 
@@ -31,7 +31,7 @@ function Validation() {
 
   async function decide(id: string, approve: boolean, motif?: string) {
     setBusy(true);
-    const { error } = await supabase.rpc("decide_order", { _order: id, _approve: approve, _reason: motif ?? null });
+    const { error } = await supabase.rpc("decide_order", { _order: id, _approve: approve, _reason: motif });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     if (approve) {

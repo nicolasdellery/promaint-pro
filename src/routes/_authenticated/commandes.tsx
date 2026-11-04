@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/commandes")({
   head: () => ({ meta: [{ title: "Mes commandes — ProMaint Pro" }, { name: "description", content: "Suivi du statut de vos commandes." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(ordersQuery),
   component: Commandes,
-  errorComponent: ({ error }) => <div role="alert">{error.message}</div>,
+  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div>Introuvable.</div>,
 });
 
