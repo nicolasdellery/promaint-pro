@@ -1,3 +1,4 @@
+import { PageError, PageNotFound } from "@/components/PageState";
 import { frError } from "@/lib/errors";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -36,8 +37,8 @@ export const Route = createFileRoute("/_authenticated/devis")({
   head: () => ({ meta: [{ title: "Devis — ProMaint Pro" }, { name: "description", content: "Suivi des demandes de devis." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(quotesQuery),
   component: Devis,
-  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
-  notFoundComponent: () => <div>Introuvable.</div>,
+  errorComponent: PageError,
+  notFoundComponent: PageNotFound,
 });
 
 function Devis() {

@@ -1,3 +1,4 @@
+import { PageError, PageNotFound } from "@/components/PageState";
 import { frError } from "@/lib/errors";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -39,8 +40,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
     context.queryClient.ensureQueryData(quotesQuery),
   ]),
   component: Admin,
-  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
-  notFoundComponent: () => <div>Introuvable.</div>,
+  errorComponent: PageError,
+  notFoundComponent: PageNotFound,
 });
 
 const tone = { erp_error: "danger", alert: "warn", erp_attempt: "info", status_change: "neutral" } as const;

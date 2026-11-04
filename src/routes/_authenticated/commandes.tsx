@@ -1,3 +1,4 @@
+import { PageError, PageNotFound } from "@/components/PageState";
 import { frError } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -41,8 +42,8 @@ export const Route = createFileRoute("/_authenticated/commandes")({
   head: () => ({ meta: [{ title: "Mes commandes — ProMaint Pro" }, { name: "description", content: "Suivi du statut de vos commandes." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(ordersQuery),
   component: Commandes,
-  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
-  notFoundComponent: () => <div>Introuvable.</div>,
+  errorComponent: PageError,
+  notFoundComponent: PageNotFound,
 });
 
 function OrderStatus({ status, attempts, admin, blocked }: { status: string; attempts: number; admin: boolean; blocked: string | null }) {

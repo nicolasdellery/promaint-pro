@@ -1,3 +1,4 @@
+import { PageError, PageNotFound } from "@/components/PageState";
 import { frError } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -15,8 +16,8 @@ export const Route = createFileRoute("/_authenticated/validation")({
   head: () => ({ meta: [{ title: "Espace valideur — ProMaint Pro" }, { name: "description", content: "Commandes en attente de validation." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(ordersQuery),
   component: Validation,
-  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
-  notFoundComponent: () => <div>Introuvable.</div>,
+  errorComponent: PageError,
+  notFoundComponent: PageNotFound,
 });
 
 function Validation() {
