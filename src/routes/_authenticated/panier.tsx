@@ -1,5 +1,5 @@
 import { frError } from "@/lib/errors";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -118,7 +118,13 @@ function Panier() {
     return (
       <div className="space-y-2">
         <h1 className="text-xl font-semibold">Panier</h1>
-        <p className="text-sm text-muted-foreground">Votre panier est vide.</p>
+        <div className="rounded-md border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground">Votre panier est vide.</p>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <Button asChild size="sm"><Link to="/catalogue">Parcourir le catalogue</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/references">Mes références habituelles</Link></Button>
+          </div>
+        </div>
       </div>
     );
 
