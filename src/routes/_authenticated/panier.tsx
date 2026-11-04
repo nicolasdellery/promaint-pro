@@ -48,7 +48,7 @@ function Panier() {
     () =>
       lines.map((l) => {
         const p = products.find((x) => x.id === l.product_id);
-        if (!p) return { l, p: undefined, price: null, delay: 0, changed: false };
+        if (!p || p.status !== "active") return { l, p: undefined, price: null, delay: 0, changed: false };
         const price = getUnitPrice(account, toPricingProduct(p), l.quantity);
         const stock = p.stock as unknown as { quantity: number; restock_delay_days: number } | null;
         return { l, p, price, delay: lineDelayDays(l.quantity, stock), changed: priceChanged(l.unit_price_snapshot, price.price) };
