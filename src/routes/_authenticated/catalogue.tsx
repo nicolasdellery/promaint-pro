@@ -5,23 +5,24 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
 import { cart } from "@/lib/cart";
-import { computePrice } from "@/lib/pricing";
-import { eur, PRICE_ORIGIN } from "@/lib/format";
+import { availability, getUnitPrice, priceOriginLabel, type Availability, type PricingAccount } from "@/lib/pricing";
+import { eur } from "@/lib/format";
 import { Pill } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const catalogQuery = queryOptions({
   queryKey: ["catalog"],
   queryFn: async () => {
-    const [p, t, c] = await Promise.all([
-      supabase.from("products").select("*, stock(*)").order("sku"),
-      supabase.from("tier_prices").select("*"),
-      supabase.from("contract_prices").select("*").gte("end_date", new Date().toISOString().slice(0, 10)),
+    const [p, c] = await Promise.all([
+      supabase.from("products").select("*, stock(*), tier_prices(*)").order("sku"),
+      supabase.from("contract_prices").select("*"),
     ]);
     if (p.error) throw p.error;
-    return { products: p.data, tiers: t.data ?? [], contracts: c.data ?? [] };
+    return { products: p.data, contracts: c.data ?? [] };
   },
 });
 
@@ -31,112 +32,182 @@ export const Route = createFileRoute("/_authenticated/catalogue")({
   component: Catalogue,
 });
 
+type Product = Awaited<ReturnType<NonNullable<typeof catalogQuery.queryFn>>>["products"][number];
+type StockRow = { quantity: number; restock_delay_days: number } | null;
+type AvailFilter = "all" | Availability | "quote_only";
+
+const toneFor = { in_stock: "ok", low: "warn", backorder: "neutral" } as const;
+
+function AvailabilityPill({ p }: { p: Product }) {
+  if (p.status === "discontinued") return <Pill>Produit arrêté</Pill>;
+  if (p.status === "quote_only") return <Pill tone="info">Sur devis</Pill>;
+  const a = availability(p.stock as unknown as StockRow);
+  return <Pill tone={toneFor[a.key]}>{a.label}</Pill>;
+}
+
 function Catalogue() {
   const me = useMe();
-  const { products, tiers, contracts } = useSuspenseQuery(catalogQuery).data;
+  const { products, contracts } = useSuspenseQuery(catalogQuery).data;
   const [q, setQ] = useState("");
   const [family, setFamily] = useState("Toutes");
-  const [qty, setQty] = useState<Record<string, number>>({});
-  const families = ["Toutes", ...Array.from(new Set(products.map((p) => p.family)))];
+  const [avail, setAvail] = useState<AvailFilter>("all");
+  const [selected, setSelected] = useState<Product | null>(null);
   const isAdmin = me.role === "admin";
+  const families = ["Toutes", ...Array.from(new Set(products.map((p) => p.family)))];
 
-  const rows = useMemo(
-    () =>
-      products.filter(
-        (p) =>
-          (family === "Toutes" || p.family === family) &&
-          (q === "" || `${p.sku} ${p.name}`.toLowerCase().includes(q.toLowerCase())),
-      ),
-    [products, family, q],
-  );
+  const account: PricingAccount = {
+    id: me.account_id ?? "",
+    account_discount: Number(me.account?.account_discount ?? 0),
+    contract_prices: contracts
+      .filter((c) => c.account_id === me.account_id)
+      .map((c) => ({ product_id: c.product_id, price: Number(c.price), end_date: c.end_date })),
+  };
+
+  const rows = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return products.filter((p) => {
+      if (family !== "Toutes" && p.family !== family) return false;
+      if (needle && !p.sku.toLowerCase().includes(needle) && !p.name.toLowerCase().includes(needle)) return false;
+      if (avail === "all") return true;
+      if (avail === "quote_only") return p.status === "quote_only";
+      return p.status === "active" && availability(p.stock as unknown as StockRow).key === avail;
+    });
+  }, [products, family, q, avail]);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-4 text-xl font-semibold">Catalogue</h1>
-        {families.map((f) => (
-          <Button key={f} size="sm" variant={f === family ? "default" : "outline"} onClick={() => setFamily(f)}>{f}</Button>
-        ))}
-        <Input placeholder="Réf. ou désignation…" value={q} onChange={(e) => setQ(e.target.value)} className="ml-auto h-8 w-64" />
+        <h1 className="mr-2 text-xl font-semibold">Catalogue</h1>
+        <Input placeholder="Référence ou nom…" value={q} onChange={(e) => setQ(e.target.value)} className="h-8 w-56" />
+        <Select value={family} onValueChange={setFamily}>
+          <SelectTrigger className="h-8 w-44"><SelectValue /></SelectTrigger>
+          <SelectContent>{families.map((f) => <SelectItem key={f} value={f}>{f === "Toutes" ? "Toutes les familles" : f}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={avail} onValueChange={(v) => setAvail(v as AvailFilter)}>
+          <SelectTrigger className="h-8 w-48"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toute disponibilité</SelectItem>
+            <SelectItem value="in_stock">En stock</SelectItem>
+            <SelectItem value="low">Stock faible</SelectItem>
+            <SelectItem value="backorder">Sur commande</SelectItem>
+            <SelectItem value="quote_only">Sur devis</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="ml-auto font-mono text-xs text-muted-foreground">{rows.length} réf.</span>
       </div>
-      <div className="rounded-md border bg-card">
+
+      <div className="overflow-x-auto rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-24">Réf.</TableHead>
               <TableHead>Désignation</TableHead>
-              <TableHead>Caractéristiques</TableHead>
-              <TableHead className="text-right">Catalogue HT</TableHead>
-              {!isAdmin && <TableHead className="text-right">Votre prix HT</TableHead>}
-              <TableHead className="text-center">Lot</TableHead>
-              <TableHead>Stock</TableHead>
-              {!isAdmin && <TableHead className="w-44">Quantité</TableHead>}
+              <TableHead className="text-center">Cond.</TableHead>
+              <TableHead>Disponibilité</TableHead>
+              <TableHead className="text-right">{isAdmin ? "Catalogue HT" : "Votre prix HT"}</TableHead>
+              {!isAdmin && <TableHead className="w-52" />}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((p) => {
-              const pack = p.pack_size;
-              const qn = qty[p.id] ?? pack;
-              const contract = contracts.find((c) => c.product_id === p.id && c.account_id === me.account_id);
-              const price = computePrice({
-                catalogPrice: Number(p.catalog_price),
-                accountDiscount: Number(me.account?.account_discount ?? 0),
-                contractPrice: contract ? Number(contract.price) : null,
-                tiers: tiers.filter((t) => t.product_id === p.id).map((t) => ({ min_quantity: t.min_quantity, discount_percent: Number(t.discount_percent) })),
-                quantity: qn,
-              });
-              const stock = p.stock as unknown as { quantity: number; restock_delay_days: number } | null;
-              const attrs = Object.entries((p.technical_attributes ?? {}) as Record<string, unknown>);
-              return (
-                <TableRow key={p.id} className={p.status === "discontinued" ? "opacity-60" : ""}>
-                  <TableCell className="font-mono text-xs">{p.sku}</TableCell>
-                  <TableCell>
+            {rows.length === 0 && (
+              <TableRow><TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">Aucun produit ne correspond.</TableCell></TableRow>
+            )}
+            {rows.map((p) => (
+              <TableRow key={p.id} className={p.status === "discontinued" ? "opacity-60" : ""}>
+                <TableCell className="font-mono text-xs">{p.sku}</TableCell>
+                <TableCell>
+                  <button type="button" onClick={() => setSelected(p)} className="text-left hover:text-primary hover:underline">
                     <div className="font-medium">{p.name}</div>
-                    <div className="text-xs text-muted-foreground">{p.family}</div>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{attrs.map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`).join(" · ")}</TableCell>
-                  <TableCell className="text-right font-mono text-sm">{eur(Number(p.catalog_price))}</TableCell>
-                  {!isAdmin && (
-                    <TableCell className="text-right">
-                      {p.status === "active" ? (
-                        <>
-                          <div className="font-mono text-sm font-semibold">{eur(price.unit)}</div>
-                          <div className="text-[11px] text-muted-foreground">{PRICE_ORIGIN[price.origin]}</div>
-                        </>
-                      ) : "—"}
-                    </TableCell>
-                  )}
-                  <TableCell className="text-center font-mono text-xs">{pack > 1 ? `×${pack}` : "1"}</TableCell>
-                  <TableCell>
-                    {p.status === "discontinued" ? <Pill>Arrêté</Pill>
-                      : p.status === "quote_only" ? <Pill tone="info">Sur devis</Pill>
-                      : stock && stock.quantity > 0 ? <Pill tone="ok">{stock.quantity} dispo</Pill>
-                      : <Pill tone="warn">Réappro. {stock?.restock_delay_days ?? "?"} j</Pill>}
-                  </TableCell>
-                  {!isAdmin && (
-                    <TableCell>
-                      {p.status === "active" ? (
-                        <div className="flex gap-1">
-                          <Input type="number" min={pack} step={pack} value={qn} className="h-8 w-20 font-mono"
-                            onChange={(e) => setQty({ ...qty, [p.id]: Math.max(pack, Number(e.target.value) || pack) })} />
-                          <Button size="sm" onClick={() => {
-                            if (qn % pack !== 0) { toast.error(`Quantité multiple de ${pack} requise`); return; }
-                            cart.add({ product_id: p.id, sku: p.sku, name: p.name, pack_size: pack, quantity: qn });
-                            toast.success(`${p.sku} ajouté au panier`);
-                          }}>Ajouter</Button>
-                        </div>
-                      ) : p.status === "quote_only" ? (
-                        <QuoteButton productId={p.id} accountId={me.account_id!} userId={me.id} />
-                      ) : null}
-                    </TableCell>
-                  )}
-                </TableRow>
-              );
-            })}
+                  </button>
+                  <div className="text-xs text-muted-foreground">{p.family}</div>
+                </TableCell>
+                <TableCell className="text-center font-mono text-xs">{p.pack_size > 1 ? `lot ×${p.pack_size}` : "unité"}</TableCell>
+                <TableCell><AvailabilityPill p={p} /></TableCell>
+                <TableCell className="text-right">
+                  <PriceCell account={account} p={p} qty={p.pack_size} isAdmin={isAdmin} />
+                </TableCell>
+                {!isAdmin && <TableCell><BuyControls p={p} me={me} /></TableCell>}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="max-w-lg">
+          {selected && <ProductSheet p={selected} account={account} isAdmin={isAdmin} me={me} />}
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function PriceCell({ account, p, qty, isAdmin }: { account: PricingAccount; p: Product; qty: number; isAdmin: boolean }) {
+  if (isAdmin) return <span className="font-mono text-sm">{eur(Number(p.catalog_price))}</span>;
+  if (p.status === "quote_only") return <span className="text-xs text-muted-foreground">Prix sur devis</span>;
+  if (p.status === "discontinued") return <span className="text-muted-foreground">—</span>;
+  const r = getUnitPrice(account, { id: p.id, catalog_price: Number(p.catalog_price), tier_prices: p.tier_prices.map((t) => ({ min_quantity: t.min_quantity, discount_percent: Number(t.discount_percent) })) }, qty);
+  return (
+    <div>
+      <div className="font-mono text-sm font-semibold">{eur(r.price)}</div>
+      <div className="text-[11px] text-muted-foreground">{priceOriginLabel(r)}</div>
+    </div>
+  );
+}
+
+type Me = ReturnType<typeof useMe>;
+
+function BuyControls({ p, me }: { p: Product; me: Me }) {
+  const [qty, setQty] = useState(p.pack_size);
+  if (p.status === "discontinued") return null;
+  if (p.status === "quote_only") return <QuoteButton productId={p.id} accountId={me.account_id!} userId={me.id} />;
+  const pack = p.pack_size;
+  return (
+    <div className="flex gap-1">
+      <Input type="number" min={pack} step={pack} value={qty} className="h-8 w-20 font-mono" aria-label="Quantité"
+        onChange={(e) => setQty(Math.max(pack, Number(e.target.value) || pack))} />
+      <Button size="sm" onClick={() => {
+        if (qty % pack !== 0) { toast.error(`Quantité multiple de ${pack} requise`); return; }
+        cart.add({ product_id: p.id, sku: p.sku, name: p.name, pack_size: pack, quantity: qty });
+        toast.success(`${p.sku} ajouté au panier`);
+      }}>Ajouter au panier</Button>
+    </div>
+  );
+}
+
+function ProductSheet({ p, account, isAdmin, me }: { p: Product; account: PricingAccount; isAdmin: boolean; me: Me }) {
+  const attrs = Object.entries((p.technical_attributes ?? {}) as Record<string, unknown>);
+  const tiers = [...p.tier_prices].sort((a, b) => a.min_quantity - b.min_quantity);
+  return (
+    <>
+      <DialogHeader>
+        <p className="font-mono text-xs text-muted-foreground">{p.sku} · {p.family}</p>
+        <DialogTitle>{p.name}</DialogTitle>
+        <DialogDescription asChild><div><AvailabilityPill p={p} /></div></DialogDescription>
+      </DialogHeader>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 rounded-md border bg-muted/40 p-3 text-sm">
+        {attrs.map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt className="capitalize text-muted-foreground">{k.replace(/_/g, " ")}</dt>
+            <dd className="font-mono">{String(v)}</dd>
+          </div>
+        ))}
+        <dt className="text-muted-foreground">Conditionnement</dt>
+        <dd className="font-mono">{p.pack_size > 1 ? `Lot de ${p.pack_size} — commande par multiple de ${p.pack_size}` : "À l'unité"}</dd>
+      </dl>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <div className="text-xs text-muted-foreground">Catalogue {eur(Number(p.catalog_price))} HT</div>
+          <PriceCell account={account} p={p} qty={p.pack_size} isAdmin={isAdmin} />
+        </div>
+        {!isAdmin && <BuyControls p={p} me={me} />}
+      </div>
+      {tiers.length > 0 && p.status === "active" && (
+        <p className="text-xs text-muted-foreground">
+          Paliers : {tiers.map((t) => `−${Number(t.discount_percent)} % dès ${t.min_quantity}`).join(" · ")} (non cumulables avec la remise compte)
+        </p>
+      )}
+    </>
   );
 }
 
