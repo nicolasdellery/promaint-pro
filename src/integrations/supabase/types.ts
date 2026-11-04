@@ -188,10 +188,12 @@ export type Database = {
           client_request_id: string | null
           created_at: string
           created_by: string
+          erp_attempts: number
           erp_reference: string | null
           id: string
           partial_delivery_allowed: boolean
           processing_fee: number
+          rejection_reason: string | null
           shipping_fee: number
           status: Database["public"]["Enums"]["order_status"]
           total_ht: number
@@ -202,10 +204,12 @@ export type Database = {
           client_request_id?: string | null
           created_at?: string
           created_by: string
+          erp_attempts?: number
           erp_reference?: string | null
           id?: string
           partial_delivery_allowed?: boolean
           processing_fee?: number
+          rejection_reason?: string | null
           shipping_fee?: number
           status?: Database["public"]["Enums"]["order_status"]
           total_ht?: number
@@ -216,10 +220,12 @@ export type Database = {
           client_request_id?: string | null
           created_at?: string
           created_by?: string
+          erp_attempts?: number
           erp_reference?: string | null
           id?: string
           partial_delivery_allowed?: boolean
           processing_fee?: number
+          rejection_reason?: string | null
           shipping_fee?: number
           status?: Database["public"]["Enums"]["order_status"]
           total_ht?: number
@@ -455,6 +461,7 @@ export type Database = {
         Args: { _approve: boolean; _order: string }
         Returns: undefined
       }
+      cancel_order: { Args: { _order: string }; Returns: undefined }
       compute_price: {
         Args: { _account: string; _product: string; _qty: number }
         Returns: {
@@ -463,6 +470,11 @@ export type Database = {
         }[]
       }
       current_account_id: { Args: never; Returns: string }
+      decide_order: {
+        Args: { _approve: boolean; _order: string; _reason?: string }
+        Returns: undefined
+      }
+      erp_transmit: { Args: { _order: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_portal_user: { Args: never; Returns: boolean }
       my_price: {
