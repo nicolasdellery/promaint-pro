@@ -31,7 +31,7 @@ function Validation() {
 
   async function decide(id: string, approve: boolean, motif?: string) {
     setBusy(true);
-    const { error } = await supabase.rpc("decide_order", { _order: id, _approve: approve, _reason: motif });
+    const { error } = await supabase.rpc("decide_order", { _order: id, _approve: approve, ...(motif ? { _reason: motif } : {}) });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     if (approve) {
