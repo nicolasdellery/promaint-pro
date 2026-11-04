@@ -45,7 +45,9 @@ function Layout() {
           </Link>
           <nav className="flex gap-1">
             <Link to="/catalogue" className={link} activeProps={active}>Catalogue</Link>
-            <Link to="/commandes" className={link} activeProps={active}>Commandes</Link>
+            <Link to="/commandes" className={link} activeProps={active}>{isAdmin ? "Commandes" : "Mes commandes"}</Link>
+            {!isAdmin && <Link to="/references" className={link} activeProps={active}>Références habituelles</Link>}
+            {(me.role === "approver" || isAdmin) && <Link to="/validation" className={link} activeProps={active}>Validation</Link>}
             <Link to="/devis" className={link} activeProps={active}>Devis</Link>
             {isAdmin && <Link to="/admin" className={link} activeProps={active}>Supervision</Link>}
           </nav>
