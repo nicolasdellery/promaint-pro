@@ -29,6 +29,16 @@ const DEMO = [
   ["admin@promaint.demo", "Admin ProMaint"],
 ];
 
+const PROFILES = [
+  ["acheteur.horizon@promaint.demo", "Acheteur – Résidences Horizon"],
+  ["valideur.horizon@promaint.demo", "Valideur – Résidences Horizon"],
+  ["acheteur.staubin@promaint.demo", "Acheteur – Clinique Saint-Aubin"],
+  ["valideur.staubin@promaint.demo", "Valideur – Clinique Saint-Aubin"],
+  ["acheteur.ouest@promaint.demo", "Acheteur – Logistique Ouest"],
+  ["valideur.ouest@promaint.demo", "Valideur – Logistique Ouest"],
+  ["admin@promaint.demo", "Admin ProMaint"],
+];
+
 function AuthPage() {
   const nav = useNavigate();
   const [email, setEmail] = useState("");
@@ -54,6 +64,17 @@ function AuthPage() {
           <div className="grid gap-1.5"><Label htmlFor="pw">Mot de passe</Label><Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
           <Button type="submit" disabled={busy}>Se connecter</Button>
         </form>
+        <div className="space-y-4">
+        <div className="rounded-md border bg-card p-4">
+          <h2 className="text-sm font-semibold">Connexion en un clic</h2>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {PROFILES.map(([em, label]) => (
+              <Button key={em} type="button" variant="outline" size="sm" disabled={busy} className="justify-start" onClick={() => signIn(undefined, em, "Demo1234!")}>
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
         <div className="rounded-md border bg-card">
           <div className="border-b px-4 py-3">
             <h2 className="text-sm font-semibold">Comptes de démonstration</h2>
@@ -69,6 +90,7 @@ function AuthPage() {
               </li>
             ))}
           </ul>
+        </div>
         </div>
       </main>
     </>

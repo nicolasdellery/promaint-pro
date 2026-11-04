@@ -58,7 +58,8 @@ function Page() {
         <p className="mt-1 text-sm text-muted-foreground">Un commercial vous recontacte sous 48 h ouvrées.</p>
         {sent ? (
           <div className="mt-8 rounded-md border border-success/30 bg-success/10 p-4 text-sm">
-            Merci, votre demande a bien été enregistrée.
+            <p className="font-medium">Merci, votre demande a bien été enregistrée.</p>
+            <p className="mt-1 text-muted-foreground">Elle est désormais visible par l'équipe ProMaint dans l'espace de supervision.</p>
           </div>
         ) : (
           <form onSubmit={onSubmit} className="mt-8 grid gap-4 rounded-md border bg-card p-6">
@@ -71,6 +72,7 @@ function Page() {
             <div className="grid gap-1.5"><Label htmlFor="email">E-mail professionnel *</Label><Input id="email" name="email" type="email" required maxLength={255} /></div>
             <div className="grid gap-1.5"><Label htmlFor="message">Besoins</Label><Textarea id="message" name="message" maxLength={2000} rows={4} /></div>
             <Button type="submit" disabled={busy}>{busy ? "Envoi…" : "Envoyer la demande"}</Button>
+            <p className="text-center text-xs text-muted-foreground">Démonstration : n'indiquez pas de données réelles.</p>
           </form>
         )}
       </main>
