@@ -38,12 +38,12 @@ function Layout() {
   return (
     <div>
       <header className="bg-header text-header-foreground">
-        <div className="mx-auto flex h-12 max-w-7xl items-center gap-3 px-4 sm:gap-6">
+        <div className="mx-auto flex min-h-12 max-w-7xl flex-wrap items-center gap-x-3 px-4 sm:flex-nowrap sm:gap-6">
           <Link to="/catalogue" className="flex shrink-0 items-center gap-2 font-semibold">
             <span className="grid h-6 w-6 place-items-center rounded bg-primary font-mono text-[10px]">PM</span>
             <span className="hidden sm:inline">ProMaint Pro</span>
           </Link>
-          <nav aria-label="Navigation principale" className="-mx-1 flex min-w-0 gap-1 overflow-x-auto whitespace-nowrap px-1">
+          <nav aria-label="Navigation principale" className="order-last -mx-1 flex w-full min-w-0 gap-1 overflow-x-auto whitespace-nowrap px-1 pb-1.5 sm:order-none sm:w-auto sm:pb-0">
             <Link to="/catalogue" className={link} activeProps={active}>Catalogue</Link>
             <Link to="/commandes" className={link} activeProps={active}>{isAdmin ? "Commandes" : "Mes commandes"}</Link>
             {!isAdmin && <Link to="/references" className={link} activeProps={active}>Références habituelles</Link>}
