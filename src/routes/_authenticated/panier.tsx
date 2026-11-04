@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { frError } from "@/lib/errors";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -90,7 +91,7 @@ function Panier() {
     if (error) {
       submitting.current = false;
       setBusy(false);
-      toast.error(error.message);
+      toast.error(frError(error));
       return;
     }
     const { data: order } = await supabase.from("orders").select("status").eq("id", orderId).maybeSingle();
@@ -106,7 +107,7 @@ function Panier() {
     submitting.current = true;
     setBusy(true);
     const { error } = await supabase.rpc("request_quote", { _lines: lines.map((l) => ({ product_id: l.product_id, quantity: l.quantity })) });
-    if (error) { submitting.current = false; setBusy(false); toast.error(error.message); return; }
+    if (error) { submitting.current = false; setBusy(false); toast.error(frError(error)); return; }
     cart.clear();
     await qc.invalidateQueries();
     toast.success("Demande de devis envoyée à ProMaint");
@@ -117,7 +118,13 @@ function Panier() {
     return (
       <div className="space-y-2">
         <h1 className="text-xl font-semibold">Panier</h1>
-        <p className="text-sm text-muted-foreground">Votre panier est vide.</p>
+        <div className="rounded-md border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground">Votre panier est vide.</p>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <Button asChild size="sm"><Link to="/catalogue">Parcourir le catalogue</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to="/references">Mes références habituelles</Link></Button>
+          </div>
+        </div>
       </div>
     );
 

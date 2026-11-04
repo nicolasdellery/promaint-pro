@@ -1,3 +1,5 @@
+import { PageError, PageNotFound } from "@/components/PageState";
+import { frError } from "@/lib/errors";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -35,8 +37,8 @@ export const Route = createFileRoute("/_authenticated/devis")({
   head: () => ({ meta: [{ title: "Devis — ProMaint Pro" }, { name: "description", content: "Suivi des demandes de devis." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(quotesQuery),
   component: Devis,
-  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
-  notFoundComponent: () => <div>Introuvable.</div>,
+  errorComponent: PageError,
+  notFoundComponent: PageNotFound,
 });
 
 function Devis() {
@@ -51,7 +53,7 @@ function Devis() {
     const { data, error } = await supabase.rpc("accept_quote", { _quote: id });
     setBusy(null);
     await qc.invalidateQueries();
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(frError(error)); return; }
     if (!data) { toast.error("Devis expiré : il ne peut plus être accepté."); return; }
     toast.success("Devis accepté : la commande est créée aux prix du devis.");
     nav({ to: "/commandes" });

@@ -1,3 +1,5 @@
+import { PageError, PageNotFound } from "@/components/PageState";
+import { frError } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
@@ -40,8 +42,8 @@ export const Route = createFileRoute("/_authenticated/commandes")({
   head: () => ({ meta: [{ title: "Mes commandes — ProMaint Pro" }, { name: "description", content: "Suivi du statut de vos commandes." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(ordersQuery),
   component: Commandes,
-  errorComponent: ({ error }) => <div role="alert">{error instanceof Error ? error.message : String(error)}</div>,
-  notFoundComponent: () => <div>Introuvable.</div>,
+  errorComponent: PageError,
+  notFoundComponent: PageNotFound,
 });
 
 function OrderStatus({ status, attempts, admin, blocked }: { status: string; attempts: number; admin: boolean; blocked: string | null }) {
@@ -80,7 +82,7 @@ function Commandes() {
   async function cancel(id: string) {
     if (!confirm("Annuler cette commande ?")) return;
     const { error } = await supabase.rpc("cancel_order", { _order: id });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(frError(error)); return; }
     toast.success("Commande annulée");
     qc.invalidateQueries();
   }
@@ -182,7 +184,7 @@ function ReplaceLine({ lineId, family }: { lineId: string; family: string }) {
       onChange={async (e) => {
         if (!e.target.value) return;
         const { error } = await supabase.rpc("replace_order_line", { _line: lineId, _product: e.target.value });
-        if (error) { toast.error(error.message); return; }
+        if (error) { toast.error(frError(error)); return; }
         toast.success("Référence remplacée — transmission ERP relancée");
         qc.invalidateQueries();
       }}

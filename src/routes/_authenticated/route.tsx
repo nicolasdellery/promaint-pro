@@ -38,12 +38,12 @@ function Layout() {
   return (
     <div>
       <header className="bg-header text-header-foreground">
-        <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4">
-          <Link to="/catalogue" className="flex items-center gap-2 font-semibold">
+        <div className="mx-auto flex min-h-12 max-w-7xl flex-wrap items-center gap-x-3 px-4 sm:flex-nowrap sm:gap-6">
+          <Link to="/catalogue" className="flex shrink-0 items-center gap-2 font-semibold">
             <span className="grid h-6 w-6 place-items-center rounded bg-primary font-mono text-[10px]">PM</span>
-            ProMaint Pro
+            <span className="hidden sm:inline">ProMaint Pro</span>
           </Link>
-          <nav className="flex gap-1">
+          <nav aria-label="Navigation principale" className="order-last -mx-1 flex w-full min-w-0 gap-1 overflow-x-auto whitespace-nowrap px-1 pb-1.5 sm:order-none sm:w-auto sm:pb-0">
             <Link to="/catalogue" className={link} activeProps={active}>Catalogue</Link>
             <Link to="/commandes" className={link} activeProps={active}>{isAdmin ? "Commandes" : "Mes commandes"}</Link>
             {!isAdmin && <Link to="/references" className={link} activeProps={active}>Références habituelles</Link>}
@@ -51,15 +51,15 @@ function Layout() {
             <Link to="/devis" className={link} activeProps={active}>Devis</Link>
             {isAdmin && <Link to="/admin" className={link} activeProps={active}>Back-office</Link>}
           </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
+          <div className="ml-auto flex shrink-0 items-center gap-2 text-sm sm:gap-3">
             {!isAdmin && (
               <Link to="/panier" className={link} activeProps={active}>
-                <span className="flex items-center gap-1.5"><ShoppingCart className="h-4 w-4" />{cartLines.length}</span>
+                <span className="flex items-center gap-1.5" aria-label={`Panier : ${cartLines.length} article${cartLines.length > 1 ? "s" : ""}`}><ShoppingCart className="h-4 w-4" aria-hidden="true" />{cartLines.length}</span>
               </Link>
             )}
-            <div className="text-right leading-tight">
+            <div className="hidden text-right leading-tight md:block">
               <div>{me.full_name}</div>
-              <div className="text-xs text-header-foreground/60">{ROLE_LABEL[me.role]}{acc ? ` · ${acc.name}` : ""}</div>
+              <div className="text-xs text-header-foreground/75">{ROLE_LABEL[me.role]}{acc ? ` · ${acc.name}` : ""}</div>
             </div>
             <Button size="icon" variant="ghost" onClick={signOut} aria-label="Se déconnecter" className="text-header-foreground hover:bg-header-foreground/10 hover:text-header-foreground">
               <LogOut />
@@ -68,7 +68,8 @@ function Layout() {
         </div>
         {acc && (
           <div className="border-t border-header-foreground/10">
-            <div className="mx-auto flex max-w-7xl gap-6 px-4 py-1.5 font-mono text-xs text-header-foreground/70">
+            <div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-0.5 px-4 py-1.5 font-mono text-xs text-header-foreground/85">
+              <span className="font-sans md:hidden">{me.full_name} · {ROLE_LABEL[me.role]}</span>
               <span>Remise compte {Number(acc.account_discount)} %</span>
               <span>Seuil validation {eur(acc.approval_threshold)}</span>
               <span>Encours {eur(acc.current_outstanding)} / {eur(acc.credit_limit)}</span>
@@ -76,7 +77,7 @@ function Layout() {
           </div>
         )}
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
         <Outlet />
       </main>
     </div>
