@@ -461,6 +461,7 @@ export type Database = {
       }
       current_account_id: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
+      is_portal_user: { Args: never; Returns: boolean }
       my_price: {
         Args: { _product: string; _qty: number }
         Returns: {

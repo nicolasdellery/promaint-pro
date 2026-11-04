@@ -8,6 +8,13 @@
       "when": 1793787046196,
       "tag": "0000_promaint_schema_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793788301469,
+      "tag": "0001_tighten_catalog_and_request_policies",
+      "breakpoints": true
     }
   ]
 }
