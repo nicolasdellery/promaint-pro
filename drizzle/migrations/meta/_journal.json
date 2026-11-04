@@ -29,6 +29,13 @@
       "when": 1793788815186,
       "tag": "0003_erp_mock_cancel_reject",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793789259914,
+      "tag": "0004_quotes_backoffice",
+      "breakpoints": true
     }
   ]
 }
