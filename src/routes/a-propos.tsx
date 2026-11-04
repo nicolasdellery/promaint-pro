@@ -3,7 +3,7 @@ import { PublicHeader } from "@/components/PublicHeader";
 import { Button } from "@/components/ui/button";
 import { DISCLAIMER } from "@/lib/format";
 
-const CADRAGE_URL = "https://claude.ai/artifact/FLmQAnv3TJ2geJZv4x5num#22b5214f-2829";
+const CADRAGE_URL = "https://promaint-pro.lovable.app/note-de-cadrage.pdf";
 
 export const Route = createFileRoute("/a-propos")({
   head: () => ({
@@ -116,7 +116,7 @@ function About() {
           <div className="flex flex-wrap gap-2">
             <Button asChild><Link to="/auth">Tester le portail</Link></Button>
             <Button asChild variant="outline">
-              <a href={CADRAGE_URL} target="_blank" rel="noopener noreferrer">Lire le document de cadrage</a>
+              <a href={CADRAGE_URL} target="_blank" rel="noopener noreferrer">Lire la note de cadrage (PDF)</a>
             </Button>
           </div>
         </section>
