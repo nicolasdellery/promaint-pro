@@ -48,9 +48,11 @@ function Index() {
             <div className="border-b px-4 py-2 font-mono text-xs text-muted-foreground">6 familles · 60 références</div>
             <ul className="divide-y">
               {families.map((f, i) => (
-                <li key={f} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                  <span>{f}</span>
-                  <span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
+                <li key={f}>
+                  <Link to="/auth" className="flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
+                    <span>{f}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")} →</span>
+                  </Link>
                 </li>
               ))}
             </ul>
