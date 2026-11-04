@@ -5,7 +5,7 @@ Le MVP : un client recommande en quelques secondes à ses prix négociés, avec 
 La démarche : cadrage, puis règles de gestion et cas limites écrits et numérotés avant le code, prototype construit avec l'IA (Lovable), recette scénario par scénario à chaque étape.
 
 **Site en ligne** : https://promaint-pro.lovable.app
-**Document de cadrage** : https://claude.ai/artifact/FLmQAnv3TJ2geJZv4x5num#22b5214f-2829
+**Document de cadrage** : https://promaint-pro.lovable.app/note-de-cadrage.pdf
 
 ## Comptes de démo
 
