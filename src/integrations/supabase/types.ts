@@ -185,6 +185,7 @@ export type Database = {
       orders: {
         Row: {
           account_id: string
+          client_request_id: string | null
           created_at: string
           created_by: string
           erp_reference: string | null
@@ -198,6 +199,7 @@ export type Database = {
         }
         Insert: {
           account_id: string
+          client_request_id?: string | null
           created_at?: string
           created_by: string
           erp_reference?: string | null
@@ -211,6 +213,7 @@ export type Database = {
         }
         Update: {
           account_id?: string
+          client_request_id?: string | null
           created_at?: string
           created_by?: string
           erp_reference?: string | null
@@ -470,7 +473,7 @@ export type Database = {
         }[]
       }
       place_order: {
-        Args: { _lines: Json; _partial: boolean }
+        Args: { _lines: Json; _partial: boolean; _request_id: string }
         Returns: string
       }
     }

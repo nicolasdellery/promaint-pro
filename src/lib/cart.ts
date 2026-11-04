@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-export type CartLine = { product_id: string; sku: string; name: string; pack_size: number; quantity: number };
+export type CartLine = { product_id: string; sku: string; name: string; pack_size: number; quantity: number; unit_price_snapshot?: number | undefined };
 
 const KEY = "promaint-cart";
 let lines: CartLine[] = [];
@@ -27,6 +27,10 @@ export const cart = {
     load();
     const ex = lines.find((x) => x.product_id === l.product_id);
     save(ex ? lines.map((x) => (x === ex ? { ...x, quantity: x.quantity + l.quantity } : x)) : [...lines, l]);
+  },
+  setSnapshots(prices: Record<string, number>) {
+    load();
+    save(lines.map((x) => (prices[x.product_id] != null ? { ...x, unit_price_snapshot: prices[x.product_id] } : x)));
   },
   setQty(id: string, q: number) {
     load();

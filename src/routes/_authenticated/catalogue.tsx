@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
+import { catalogQuery, toPricingProduct } from "@/lib/catalog";
 import { cart } from "@/lib/cart";
-import { availability, getUnitPrice, priceOriginLabel, type Availability, type PricingAccount } from "@/lib/pricing";
+import { availability, getUnitPrice, roundToPack, priceOriginLabel, type Availability, type PricingAccount } from "@/lib/pricing";
 import { eur } from "@/lib/format";
 import { Pill } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -14,25 +15,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const catalogQuery = queryOptions({
-  queryKey: ["catalog"],
-  queryFn: async () => {
-    const [p, c] = await Promise.all([
-      supabase.from("products").select("*, stock(*), tier_prices(*)").order("sku"),
-      supabase.from("contract_prices").select("*"),
-    ]);
-    if (p.error) throw p.error;
-    return { products: p.data, contracts: c.data ?? [] };
-  },
-});
-
 export const Route = createFileRoute("/_authenticated/catalogue")({
   head: () => ({ meta: [{ title: "Catalogue — ProMaint Pro" }, { name: "description", content: "Catalogue et tarifs client." }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: Catalogue,
 });
 
-type Product = Awaited<ReturnType<NonNullable<typeof catalogQuery.queryFn>>>["products"][number];
+type Product = import("@/lib/catalog").CatalogProduct;
 type StockRow = { quantity: number; restock_delay_days: number } | null;
 type AvailFilter = "all" | Availability | "quote_only";
 
@@ -126,7 +115,7 @@ function Catalogue() {
                 <TableCell className="text-right">
                   <PriceCell account={account} p={p} qty={p.pack_size} isAdmin={isAdmin} />
                 </TableCell>
-                {!isAdmin && <TableCell><BuyControls p={p} me={me} /></TableCell>}
+                {!isAdmin && <TableCell><BuyControls p={p} me={me} unitPrice={getUnitPrice(account, toPricingProduct(p), p.pack_size).price} /></TableCell>}
               </TableRow>
             ))}
           </TableBody>
@@ -157,18 +146,21 @@ function PriceCell({ account, p, qty, isAdmin }: { account: PricingAccount; p: P
 
 type Me = ReturnType<typeof useMe>;
 
-function BuyControls({ p, me }: { p: Product; me: Me }) {
+function BuyControls({ p, me, unitPrice }: { p: Product; me: Me; unitPrice?: number }) {
   const [qty, setQty] = useState(p.pack_size);
   if (p.status === "discontinued") return null;
   if (p.status === "quote_only") return <QuoteButton productId={p.id} accountId={me.account_id!} userId={me.id} />;
   const pack = p.pack_size;
   return (
     <div className="flex gap-1">
-      <Input type="number" min={pack} step={pack} value={qty} className="h-8 w-20 font-mono" aria-label="Quantité"
-        onChange={(e) => setQty(Math.max(pack, Number(e.target.value) || pack))} />
+      <Input type="number" min={1} value={qty} className="h-8 w-20 font-mono" aria-label="Quantité"
+        onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+        onBlur={() => { const r = roundToPack(qty, pack); if (r.adjusted) { setQty(r.quantity); toast.info(`Vendu par ${pack}, quantité ajustée`); } }} />
       <Button size="sm" onClick={() => {
-        if (qty % pack !== 0) { toast.error(`Quantité multiple de ${pack} requise`); return; }
-        cart.add({ product_id: p.id, sku: p.sku, name: p.name, pack_size: pack, quantity: qty });
+        const r = roundToPack(qty, pack);
+        setQty(r.quantity);
+        cart.add({ product_id: p.id, sku: p.sku, name: p.name, pack_size: pack, quantity: r.quantity, unit_price_snapshot: unitPrice });
+        if (r.adjusted) toast.info(`Vendu par ${pack}, quantité ajustée à ${r.quantity}`);
         toast.success(`${p.sku} ajouté au panier`);
       }}>Ajouter au panier</Button>
     </div>
@@ -200,7 +192,7 @@ function ProductSheet({ p, account, isAdmin, me }: { p: Product; account: Pricin
           <div className="text-xs text-muted-foreground">Catalogue {eur(Number(p.catalog_price))} HT</div>
           <PriceCell account={account} p={p} qty={p.pack_size} isAdmin={isAdmin} />
         </div>
-        {!isAdmin && <BuyControls p={p} me={me} />}
+        {!isAdmin && <BuyControls p={p} me={me} unitPrice={getUnitPrice(account, toPricingProduct(p), p.pack_size).price} />}
       </div>
       {tiers.length > 0 && p.status === "active" && (
         <p className="text-xs text-muted-foreground">

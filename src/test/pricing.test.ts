@@ -65,3 +65,35 @@ describe("RG-10 — affichage du stock", () => {
     expect(availability({ quantity: 0, restock_delay_days: 10 }).label).toBe("Sur commande — délai 10 jours");
   });
 });
+
+import { fees, globalDelayDays, lineDelayDays, priceChanged, roundToPack } from "@/lib/pricing";
+
+describe("RG-07 / CL-04 — arrondi au lot supérieur", () => {
+  it("rounds 13 up to 24 for a pack of 12", () => expect(roundToPack(13, 12)).toEqual({ quantity: 24, adjusted: true }));
+  it("keeps an exact multiple", () => expect(roundToPack(24, 12)).toEqual({ quantity: 24, adjusted: false }));
+  it("rounds 1 up to 12", () => expect(roundToPack(1, 12).quantity).toBe(12));
+});
+
+describe("RG-05 / CL-11 et RG-06 — frais", () => {
+  it("adds 15 € processing under 150 € and shows the missing amount", () => {
+    const f = fees(120);
+    expect(f.processing).toBe(15);
+    expect(f.missingForNoProcessing).toBe(30);
+  });
+  it("no processing fee at exactly 150 €", () => expect(fees(150).processing).toBe(0));
+  it("19 € shipping under 400 €", () => expect(fees(399.99).shipping).toBe(19));
+  it("free shipping at 400 €", () => expect(fees(400).shipping).toBe(0));
+});
+
+describe("RG-14 / CL-05 — délai global", () => {
+  it("global delay is the longest line", () => {
+    const d = [lineDelayDays(5, { quantity: 100, restock_delay_days: 2 }), lineDelayDays(5, { quantity: 0, restock_delay_days: 10 })];
+    expect(globalDelayDays(d)).toBe(10);
+  });
+  it("insufficient stock uses the restock delay", () => expect(lineDelayDays(50, { quantity: 20, restock_delay_days: 7 })).toBe(7));
+});
+
+describe("CL-01 — prix mis à jour", () => {
+  it("detects a changed price", () => expect(priceChanged(10, 9.5)).toBe(true));
+  it("ignores unchanged price", () => expect(priceChanged(10, 10)).toBe(false));
+});

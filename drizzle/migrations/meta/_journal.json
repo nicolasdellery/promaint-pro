@@ -15,6 +15,13 @@
       "when": 1793788301469,
       "tag": "0001_tighten_catalog_and_request_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793788457783,
+      "tag": "0002_cart_rules_place_order_v2",
+      "breakpoints": true
     }
   ]
 }
