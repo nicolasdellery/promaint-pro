@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-export type CartLine = { product_id: string; sku: string; name: string; pack_size: number; quantity: number; unit_price_snapshot?: number };
+export type CartLine = { product_id: string; sku: string; name: string; pack_size: number; quantity: number; unit_price_snapshot?: number | undefined };
 
 const KEY = "promaint-cart";
 let lines: CartLine[] = [];
