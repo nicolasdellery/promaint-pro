@@ -66,6 +66,41 @@ export function availability(stock: { quantity: number; restock_delay_days: numb
   return { key: "in_stock", label: "En stock" };
 }
 
+// RG-07 / CL-04: lots are rounded UP to the next multiple.
+export function roundToPack(quantity: number, packSize: number): { quantity: number; adjusted: boolean } {
+  const q = Math.max(1, Math.floor(Number(quantity) || 0));
+  const rounded = Math.ceil(q / packSize) * packSize;
+  return { quantity: rounded, adjusted: rounded !== q };
+}
+
+export const MIN_ORDER_HT = 150;
+export const PROCESSING_FEE = 15;
+export const FREE_SHIPPING_HT = 400;
+export const SHIPPING_FEE = 19;
+
+// RG-05 / CL-11 and RG-06 (mirrored by place_order).
 export function fees(totalHt: number) {
-  return { processing: totalHt < 150 ? 15 : 0, shipping: totalHt >= 500 ? 0 : 25 };
+  const processing = totalHt < MIN_ORDER_HT ? PROCESSING_FEE : 0;
+  const shipping = totalHt >= FREE_SHIPPING_HT ? 0 : SHIPPING_FEE;
+  return {
+    processing,
+    shipping,
+    missingForNoProcessing: processing ? Math.round((MIN_ORDER_HT - totalHt) * 100) / 100 : 0,
+    missingForFreeShipping: shipping ? Math.round((FREE_SHIPPING_HT - totalHt) * 100) / 100 : 0,
+  };
+}
+
+// RG-14 / CL-05: delivery delay of a line, and global delay = longest line.
+export const STANDARD_DELIVERY_DAYS = 2;
+export function lineDelayDays(quantity: number, stock: { quantity: number; restock_delay_days: number } | null | undefined) {
+  if (stock && stock.quantity >= quantity) return STANDARD_DELIVERY_DAYS;
+  return Math.max(STANDARD_DELIVERY_DAYS, stock?.restock_delay_days ?? STANDARD_DELIVERY_DAYS);
+}
+export function globalDelayDays(lineDelays: number[]) {
+  return lineDelays.length ? Math.max(...lineDelays) : 0;
+}
+
+// CL-01: price changed since the line was added?
+export function priceChanged(snapshot: number | undefined, current: number) {
+  return snapshot != null && Math.round(snapshot * 100) !== Math.round(current * 100);
 }
