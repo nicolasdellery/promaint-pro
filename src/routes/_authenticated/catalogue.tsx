@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/me";
-import { catalogQuery } from "@/lib/catalog";
+import { catalogQuery, toPricingProduct } from "@/lib/catalog";
 import { cart } from "@/lib/cart";
 import { availability, getUnitPrice, roundToPack, priceOriginLabel, type Availability, type PricingAccount } from "@/lib/pricing";
 import { eur } from "@/lib/format";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/catalogue")({
   component: Catalogue,
 });
 
-type Product = Awaited<ReturnType<NonNullable<typeof catalogQuery.queryFn>>>["products"][number];
+type Product = import("@/lib/catalog").CatalogProduct;
 type StockRow = { quantity: number; restock_delay_days: number } | null;
 type AvailFilter = "all" | Availability | "quote_only";
 
@@ -115,7 +115,7 @@ function Catalogue() {
                 <TableCell className="text-right">
                   <PriceCell account={account} p={p} qty={p.pack_size} isAdmin={isAdmin} />
                 </TableCell>
-                {!isAdmin && <TableCell><BuyControls p={p} me={me} /></TableCell>}
+                {!isAdmin && <TableCell><BuyControls p={p} me={me} unitPrice={getUnitPrice(account, toPricingProduct(p), p.pack_size).price} /></TableCell>}
               </TableRow>
             ))}
           </TableBody>
@@ -192,7 +192,7 @@ function ProductSheet({ p, account, isAdmin, me }: { p: Product; account: Pricin
           <div className="text-xs text-muted-foreground">Catalogue {eur(Number(p.catalog_price))} HT</div>
           <PriceCell account={account} p={p} qty={p.pack_size} isAdmin={isAdmin} />
         </div>
-        {!isAdmin && <BuyControls p={p} me={me} />}
+        {!isAdmin && <BuyControls p={p} me={me} unitPrice={getUnitPrice(account, toPricingProduct(p), p.pack_size).price} />}
       </div>
       {tiers.length > 0 && p.status === "active" && (
         <p className="text-xs text-muted-foreground">
