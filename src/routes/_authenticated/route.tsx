@@ -50,6 +50,7 @@ function Layout() {
             {(me.role === "approver" || isAdmin) && <Link to="/validation" className={link} activeProps={active}>Validation</Link>}
             <Link to="/devis" className={link} activeProps={active}>Devis</Link>
             {isAdmin && <Link to="/admin" className={link} activeProps={active}>Back-office</Link>}
+            <Link to="/a-propos" className={link}>À propos</Link>
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-2 text-sm sm:gap-3">
             {!isAdmin && (
