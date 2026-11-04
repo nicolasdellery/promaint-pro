@@ -7,7 +7,7 @@ import { ShieldCheck, Tags, Truck, Workflow } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ProMaint Pro — Pièces et consommables de maintenance pour pros" },
+      { title: "ProMaint Pro — Pièces et consommables de maintenance pour les professionnels" },
       { name: "description", content: "Commandez filtres CVC, courroies, éclairage, sanitaire, électricité et visserie à vos conditions négociées." },
       { property: "og:title", content: "ProMaint Pro — Portail de commande B2B" },
       { property: "og:description", content: "Vos prix contrat, circuits de validation et suivi de commandes en un seul portail." },
